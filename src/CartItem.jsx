@@ -1,68 +1,54 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { removeItem, updateQuantity } from './CartSlice';
 import './CartItem.css';
 
-const CartItem = ({ onContinueShopping }) => {
-  const cart = useSelector(state => state.cart.items);
-  const dispatch = useDispatch();
-
-  // Calculate total amount for all products in the cart
-  const calculateTotalAmount = () => {
- 
-  };
-
-  const handleContinueShopping = (e) => {
-   
-  };
-
-
-
-  const handleIncrement = (item) => {
-  };
-
-  const handleDecrement = (item) => {
-   
-  };
-
-  const handleRemove = (item) => {
-  };
-
-  // Calculate total cost based on quantity for an item
-  const calculateTotalCost = (item) => {
-  };
-
+const CartItem = ({ cartItems, onRemoveItem, onUpdateQuantity, totalAmount, onContinueShopping }) => {
   return (
     <div className="cart-container">
-      <h2 style={{ color: 'black' }}>Total Cart Amount: ${calculateTotalAmount()}</h2>
-      <div>
-        {cart.map(item => (
-          <div className="cart-item" key={item.name}>
-            <img className="cart-item-image" src={item.image} alt={item.name} />
-            <div className="cart-item-details">
-              <div className="cart-item-name">{item.name}</div>
-              <div className="cart-item-cost">{item.cost}</div>
-              <div className="cart-item-quantity">
-                <button className="cart-item-button cart-item-button-dec" onClick={() => handleDecrement(item)}>-</button>
-                <span className="cart-item-quantity-value">{item.quantity}</span>
-                <button className="cart-item-button cart-item-button-inc" onClick={() => handleIncrement(item)}>+</button>
-              </div>
-              <div className="cart-item-total">Total: ${calculateTotalCost(item)}</div>
-              <button className="cart-item-delete" onClick={() => handleRemove(item)}>Delete</button>
-            </div>
-          </div>
-        ))}
+      <div className="cart-header">
+        <h2>Your Cart</h2>
+        <a className="continue-shopping" onClick={onContinueShopping}>Continue Shopping</a>
       </div>
-      <div style={{ marginTop: '20px', color: 'black' }} className='total_cart_amount'></div>
-      <div className="continue_shopping_btn">
-        <button className="get-started-button" onClick={(e) => handleContinueShopping(e)}>Continue Shopping</button>
-        <br />
-        <button className="get-started-button1">Checkout</button>
+
+      {/* Check if cart is empty */}
+      {cartItems.length === 0 ? (
+        <div className="empty-cart-message">
+          <h3>Your cart is empty</h3>
+        </div>
+      ) : (
+        <ul className="cart-items-list">
+          {cartItems.map(item => (
+            <li key={item.name} className="cart-item">
+              <img src={item.image} alt={item.name} />
+              <div className="cart-item-details">
+                <h3>{item.name}</h3>
+                <p>{item.description}</p>
+              </div>
+              <div className="cart-item-controls">
+                <button onClick={() => onUpdateQuantity(item, item.quantity - 1)}>-</button>
+                <span>{item.quantity}</span>
+                <button onClick={() => onUpdateQuantity(item, item.quantity + 1)}>+</button>
+              </div>
+              <div className="cart-item-price">
+                ${item.cost.toFixed(2)} {/* Format the price to two decimal places */}
+              </div>
+              <button onClick={() => onRemoveItem(item)} className='remove_btnn'>Delete</button>
+              {/* Added Total button for each plant */}
+              <button className="total-item-btn">
+                Total: ${(item.cost * item.quantity).toFixed(2)} {/* Show total for the item */}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="cart-footer">
+        <div className="total">
+          Total: ${totalAmount.toFixed(2)} {/* Display total amount */}
+        </div>
+        <button className="checkout-btn">Proceed to Checkout</button>
       </div>
     </div>
   );
 };
 
 export default CartItem;
-
-

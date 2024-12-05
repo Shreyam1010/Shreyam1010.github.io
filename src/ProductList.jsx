@@ -1,11 +1,60 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState } from 'react';
 import './ProductList.css'
 import CartItem from './CartItem';
+import { useDispatch, useSelector } from 'react-redux'; // Import Redux hooks
+import { addItem, removeItem, updateQuantity } from './CartSlice';
 function ProductList() {
+
+    const dispatch = useDispatch();  // To dispatch actions
+    const cartItems = useSelector(state => state.cart.items); 
     const [showCart, setShowCart] = useState(false); 
-    const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
+    const [addedToCart, setAddedToCart] = useState({}); // To track added products in cart
+
 
     const plantsArray = [
+        {
+            category: "Culinary Herbs",
+            plants: [
+                {
+                    name: "Basil",
+                    image: "https://www.gardeningknowhow.com/wp-content/uploads/2020/12/basil-herb.jpg",
+                    description: "Popular herb used in Italian and Thai cuisine.",
+                    cost: "$10"
+                },
+                {
+                    name: "Rosemary",
+                    image: "https://bouqs.com/blog/wp-content/uploads/2022/12/rosemary-plants.jpg",
+                    description: "Fragrant herb perfect for meats and bread.",
+                    cost: "$12"
+                },
+                {
+                    name: "Thyme",
+                    image: "https://th.bing.com/th/id/OIP.1y6mj3jvVTRpvElqBXWgXAHaE8?rs=1&pid=ImgDetMain",
+                    description: "Aromatic herb used in soups and stews.",
+                    cost: "$9"
+                },
+                {
+                    name: "Coriander",
+                    image: "https://th.bing.com/th/id/OIP.5BUVYOlvWXwd68Jy4JgbXgHaEo?w=294&h=183&c=7&r=0&o=5&pid=1.7",
+                    description: "Versatile herb for curries and salsas.",
+                    cost: "$8"
+                },
+                {
+                    name: "Parsley",
+                    image: "https://www.gardeningknowhow.com/wp-content/uploads/2020/11/parsley-in-a-flowerpot-1152x1536.jpg",
+                    description: "Adds freshness to salads and garnishes.",
+                    cost: "$7"
+                },
+                {
+                    name: "Oregano",
+                    image: "https://th.bing.com/th/id/OIP.IrCuO4y3Yo3W3M_k0l0flQHaFj?rs=1&pid=ImgDetMain",
+                    description: "Flavorful herb commonly used in Italian and Mediterranean dishes.",
+                    cost: "$11"
+                }
+                
+            ]
+        },
+        
         {
             category: "Air Purifying Plants",
             plants: [
@@ -212,69 +261,191 @@ function ProductList() {
             ]
         }
     ];
-   const styleObj={
-    backgroundColor: '#4CAF50',
-    color: '#fff!important',
-    padding: '15px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignIems: 'center',
-    fontSize: '20px',
-   }
-   const styleObjUl={
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '1100px',
-   }
-   const styleA={
-    color: 'white',
-    fontSize: '30px',
-    textDecoration: 'none',
-   }
-   const handleCartClick = (e) => {
-    e.preventDefault();
-    setShowCart(true); // Set showCart to true when cart icon is clicked
-};
-const handlePlantsClick = (e) => {
-    e.preventDefault();
-    setShowPlants(true); // Set showAboutUs to true when "About Us" link is clicked
-    setShowCart(false); // Hide the cart when navigating to About Us
-};
+    const styleObj = {
+        backgroundColor: '#4CAF50',
+        color: '#fff', // Removed `!important` as it's not valid in inline styles
+        padding: '0px 0px', // Added padding for better spacing
+        display: 'flex',
+        justifyContent: 'center', // Center align content horizontally
+        alignItems: 'center', // Fixed typo from `alignIems` to `alignItems`
+        fontSize: '20px',
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Optional: Added shadow for better appearance
+      };
+      
+      const styleObjUl = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%', // Changed to full width for responsive design
+        maxWidth: '1200px', // Limit width for a better layout
+        listStyle: 'none', // Ensures the list has no default bullets
+        padding: '0px',
+        margin: '0',
+      };
+      
+      const styleA = {
+        color: 'white',
+        fontSize: '28px', // Adjusted size for better readability
+        textDecoration: 'none',
+        fontWeight: 'bold', // Makes links more prominent
+        margin: '0 8px', // Added margin between links
+        transition: 'color 0.3s ease', // Added hover effect
+      };
+      
+      // Add hover effect
+      const styleAHover = {
+        color: '#FFD700', // Golden color for hover
+      };
+      
+ 
+    // Handle add to cart (dispatch action)
+    const handleAddToCart = (plant) => {
+        // Check if the plant already exists in the cart
+        const existingPlant = cartItems.find(item => item.name === plant.name);
+        
+        if (existingPlant) {
+            // If the plant is already in the cart, update its quantity
+            const updatedQuantity = existingPlant.quantity + 1;
+            dispatch(updateQuantity({ plant, quantity: updatedQuantity }));
+        } else {
+            // If the plant is not in the cart, add it to the cart
+            dispatch(addItem({ ...plant, quantity: 1 }));
+        }
+    
+        // Disable the "Add to Cart" button once added
+        setAddedToCart((prev) => ({
+            ...prev,
+            [plant.name]: true
+        }));
+    };
 
-   const handleContinueShopping = (e) => {
-    e.preventDefault();
-    setShowCart(false);
-  };
+    // Handle remove from cart (dispatch action)
+    const handleRemoveFromCart = (plant) => {
+        dispatch(removeItem(plant));
+    
+        setAddedToCart((prev) => ({
+            ...prev,
+            [plant.name]: false
+        }));
+    };
+
+    // Handle update quantity (dispatch action)
+    const handleUpdateQuantity = (plant, quantity) => {
+        if (quantity > 0) {
+            dispatch(updateQuantity({ plant, quantity }));
+        }
+    };
+
+    const handleCartClick = (e) => {
+        e.preventDefault();
+        setShowCart(true); 
+    };
+
+    const handlePlantsClick = (e) => {
+        e.preventDefault();
+        setShowCart(false); 
+    };
+
+    const handleContinueShopping = (e) => {
+        e.preventDefault();
+        setShowCart(false); 
+    };
+
+    // Calculate the total amount of the cart
+    const getTotalAmount = () => {
+        return cartItems.reduce((total, item) => {
+          const cost = typeof item.cost === 'string' ? parseFloat(item.cost.replace('$', '')) : item.cost;
+          return total + (cost * item.quantity);
+        }, 0);
+      };
+      
+
     return (
         <div>
-             <div className="navbar" style={styleObj}>
+        <div className="navbar">
             <div className="tag">
-               <div className="luxury">
-               <img src="https://cdn.pixabay.com/photo/2020/08/05/13/12/eco-5465432_1280.png" alt="" />
-               <a href="/" style={{textDecoration:'none'}}>
+                <div className="luxury">
+                    <img
+                        src="https://cdn.pixabay.com/photo/2020/08/05/13/12/eco-5465432_1280.png"
+                        alt="logo"
+                    />
+                    <a href="/" style={{ textDecoration: 'none' }}>
                         <div>
-                    <h3 style={{color:'white'}}>Paradise Nursery</h3>
-                    <i style={{color:'white'}}>Where Green Meets Serenity</i>
-                    </div>
+                            <h3 style={{ color: 'white' }}>Paradise Nursery</h3>
+                            <i style={{ color: 'white' }}>Where Green Meets Serenity</i>
+                        </div>
                     </a>
                 </div>
-              
             </div>
             <div style={styleObjUl}>
-                <div> <a href="#" onClick={(e)=>handlePlantsClick(e)} style={styleA}>Plants</a></div>
-                <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute"></path></svg></h1></a></div>
+                <div>
+                    <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>
+                        Plants
+                    </a>
+                </div>
+                <div className='cart'>
+                    <a href="#" onClick={(e) => handleCartClick(e)} >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" height="60" width="60">
+            <circle cx="80" cy="216" r="12" fill="#fff" />
+            <circle cx="194" cy="216" r="12" fill="#fff" />
+            <path
+                d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8"
+                fill="none"
+                stroke="#fff"
+                stroke-width="2"
+            />
+        </svg>
+
+                            <span className='cart-number'>
+                                {cartItems.length}
+                            </span>
+                    </a>
+                </div>
             </div>
         </div>
-        {!showCart? (
-        <div className="product-grid">
 
+        {!showCart ? (
+            <div className="product-grid">
+                {plantsArray.map((category, index) => (
+                    <div key={index}>
+                        <h2>{category.category}</h2>
+                        <div className="plants">
+                            {category.plants.map((plant, idx) => (
+                                <div key={idx} className="product-card">
+                                                {/* Sale label for the first 6 items */}
 
-        </div>
- ) :  (
-    <CartItem onContinueShopping={handleContinueShopping}/>
-)}
+                                                {category.category === "Culinary Herbs" && idx < 6 && (
+                <div className="sale-label">Sale</div>
+            )}
+
+                                    <img src={plant.image} alt={plant.name} />
+                                    <h3>{plant.name}</h3>
+                                    <p>{plant.description}</p>
+                                    <p>{plant.cost}</p>
+                                    <button
+                                        onClick={() => handleAddToCart(plant)}
+                                        disabled={addedToCart[plant.name]}
+                                    >
+                                        {addedToCart[plant.name] ? 'Added to Cart' : 'Add to Cart'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <CartItem
+                onContinueShopping={handleContinueShopping}
+                cartItems={cartItems}
+                onRemoveItem={handleRemoveFromCart}
+                onUpdateQuantity={handleUpdateQuantity}
+                totalAmount={getTotalAmount()}
+            />
+        )}
     </div>
+  
+
     );
 }
 
